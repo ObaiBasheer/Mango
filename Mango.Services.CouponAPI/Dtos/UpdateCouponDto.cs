@@ -10,6 +10,8 @@ namespace Mango.Services.CouponAPI.Dtos
 
         public double DiscountAmount { get; set; }
         public int MinAmount { get; set; }
+        public DateTime ExeprationDate { get; set; }
+
         public DateTime LastUpdate { get; set; }
     }
 }

@@ -12,8 +12,8 @@ namespace Mango.Services.CouponAPI
         {
             // Routes for querying catalog items.
             builder.MapGet("/items", GetAllItems);
-            builder.MapGet("/items/{id:int}", GetItemById);
-            builder.MapGet("/items/by", GetItemByCode);
+            builder.MapGet("/items/byId/{id:int}", GetItemById);
+            builder.MapGet("/items/byCode/{code}", GetItemByCode);
 
             // Routes for modifying catalog items.
             builder.MapPut("/items", UpdateItem);
@@ -89,6 +89,7 @@ namespace Mango.Services.CouponAPI
                 CouponCode = createCoupon.CouponCode,
                 MinAmount = createCoupon.MinAmount,
                 DiscountAmount = createCoupon.DiscountAmount,
+                ExeprationDate = createCoupon.ExeprationDate,
                 LastUpdate = createCoupon.LastUpdate,
             };
 

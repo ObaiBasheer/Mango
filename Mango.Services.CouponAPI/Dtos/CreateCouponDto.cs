@@ -6,6 +6,8 @@
         public double DiscountAmount { get; set; }
         public int MinAmount { get; set; }
 
+        public DateTime ExeprationDate { get; set; }
+
         public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
 
     }
