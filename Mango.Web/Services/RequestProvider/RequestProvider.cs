@@ -1,11 +1,8 @@
 ﻿using Mango.Web.Models;
-using System.Net.Http;
 using System.Net;
 using System.Net.Http.Headers;
 using Mango.Web.Exceptions;
-using System.Text.Json.Serialization;
 using System.Text.Json;
-using Mango.Web.Utility;
 
 namespace Mango.Web.Services.RequestProvider
 {
@@ -24,7 +21,7 @@ namespace Mango.Web.Services.RequestProvider
         //    },
         //        LazyThreadSafetyMode.ExecutionAndPublication);
 
-        
+
 
         public RequestProvider(IHttpClientFactory httpClientFactory)
         {
@@ -36,26 +33,98 @@ namespace Mango.Web.Services.RequestProvider
             await client.DeleteAsync(new Uri($"{requestDto.URL}/")).ConfigureAwait(false);
         }
 
-        public async Task<TResult> GetAllAsync<TResult>(RequestDto requestDto)
-        {
-            HttpClient client = _httpClientFactory.CreateClient("CouponAPI");
-            
-            var url = new Uri(requestDto.URL);
-            HttpResponseMessage  httpResponse= await client.GetAsync(new Uri($"{url}"));
-                await HandleResponse(httpResponse);
-            TResult result = await httpResponse.Content.ReadFromJsonAsync<TResult>().ConfigureAwait(false);
-            return result!;
-        }
+        //     public async Task<ResponseDto?> SendAsync(RequestDto requestDto)
+        //     {
+        //try
+        //{
+        //	HttpClient client = _httpClientFactory.CreateClient("MangoAPI");
+        //	HttpRequestMessage message = new();
+
+        //	//message.Headers.Add("Content-Type", "application/json");
+
+        //	message.RequestUri = new Uri(requestDto.URL!);
+
+
+
+        //		if (requestDto.Data != null)
+        //		{
+        //			message.Content = new StringContent(JsonConvert.SerializeObject(requestDto.Data), Encoding.UTF8, "application/json");
+        //		}
+
+
+
+
+
+
+        //	HttpResponseMessage? apiResponse = null;
+
+
+
+        //	message.Method = requestDto.MethodType switch
+        //	{
+        //		MethodType.POST => HttpMethod.Post,
+        //		MethodType.DELETE => HttpMethod.Delete,
+        //		MethodType.PUT => HttpMethod.Put,
+        //		_ => HttpMethod.Get
+        //	};
+
+
+
+
+        //	apiResponse = await client.SendAsync(message);
+
+        //	switch (apiResponse.StatusCode)
+        //	{
+        //		case HttpStatusCode.NotFound:
+        //			return new() { IsSuccess = false, Message = "Not Found" };
+        //		case HttpStatusCode.Forbidden:
+        //			return new() { IsSuccess = false, Message = "Access Denied" };
+        //		case HttpStatusCode.Unauthorized:
+        //			return new() { IsSuccess = false, Message = "Unauthorized" };
+        //		case HttpStatusCode.InternalServerError:
+        //			return new() { IsSuccess = false, Message = "Internal Server Error" };
+        //		default:
+        //			var apiContent = await apiResponse.Content.ReadAsStringAsync();
+
+        //                     ResponseDto responseDto = new ResponseDto()
+        //                     {
+        //                         IsSuccess = true,
+        //				Message = "Coupons retrieved successfully",
+        //				Result = apiContent
+        //			};
+        //			var apiResponseDto = JsonConvert.DeserializeObject<ResponseDto>(apiContent);
+        //			return responseDto;
+        //	}
+        //}
+        //catch (Exception ex)
+        //{
+        //	var dto = new ResponseDto
+        //	{
+        //		Message = ex.Message.ToString(),
+        //		IsSuccess = false
+        //	};
+        //	return dto;
+        //}
+        //     }
 
         public async Task<TResult> PostAsync<TResult>(RequestDto requestDto)
         {
             HttpClient client = _httpClientFactory.CreateClient("CouponAPI");
-            var content = new  StringContent(JsonSerializer.Serialize(requestDto.Data));
-            content.Headers.Add("Content-Type", "application/json"); //OR  content.Headers.ContentType = new MediaTypeHeaderValue("application/json")
+            var content = new StringContent(JsonSerializer.Serialize(requestDto.Data));
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpResponseMessage httpResponse = await client.PostAsync(new Uri($"{requestDto.URL}"), content).ConfigureAwait(false);
             await HandleResponse(httpResponse);
-            TResult result = await httpResponse.Content?.ReadFromJsonAsync<TResult>();
-            return result!;
+            if (httpResponse.StatusCode == HttpStatusCode.Created)
+            {
+                // Return a default instance of TResult or null
+                return default!;
+            }
+            else
+            {
+                // Read and deserialize the response body
+                return (await httpResponse.Content?.ReadFromJsonAsync<TResult>()!)!;
+            }
+
         }
 
         public async Task<TResult> PutAsync<TResult>(RequestDto requestDto)
@@ -65,8 +134,7 @@ namespace Mango.Web.Services.RequestProvider
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpResponseMessage httpResponse = await client.PutAsync(new Uri($"{requestDto.URL}"), content).ConfigureAwait(false);
             await HandleResponse(httpResponse);
-            TResult result = await httpResponse.Content?.ReadFromJsonAsync<TResult>();
-            return result!;
+            return (await httpResponse.Content?.ReadFromJsonAsync<TResult>()!)!;
         }
 
         private static async Task HandleResponse(HttpResponseMessage response)
@@ -85,26 +153,57 @@ namespace Mango.Web.Services.RequestProvider
             }
         }
 
-        
+
 
         public async Task<TResult> GetByCodeAsync<TResult>(RequestDto requestDto)
         {
-            var url = new RequestDto { URL = $"{SD.CouponURLBase}/items/byCode/" };
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("CouponAPI");
+                HttpResponseMessage httpResponse = await client.GetAsync(requestDto.URL);
+                await HandleResponse(httpResponse);
+                var result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                Console.WriteLine($"Deserialization failed: {result}");
+
+                return result!;
+            }
+            catch (Exception ex)
+            {
+
+
+                Console.WriteLine($"Deserialization failed: {ex.Message}");
+                throw; // Rethrow the exception to propagate it further if needed
+            }
+
+        }
+
+        public async Task<TResult> GetAllAsync<TResult>(RequestDto requestDto)
+        {
             HttpClient client = _httpClientFactory.CreateClient("CouponAPI");
-            HttpResponseMessage httpResponse = await client.GetAsync(url.URL);
+            HttpResponseMessage httpResponse = await client.GetAsync(requestDto.URL);
             await HandleResponse(httpResponse);
-            TResult result = await httpResponse.Content.ReadFromJsonAsync<TResult>().ConfigureAwait(false);
-            return result!;
+            return (await httpResponse.Content?.ReadFromJsonAsync<TResult>()!)!;
         }
 
         public async Task<TResult> GetByIdAsync<TResult>(RequestDto requestDto)
         {
-            var url = new RequestDto { URL = $"{SD.CouponURLBase}/items/byId/" };
-            HttpClient client = _httpClientFactory.CreateClient("CouponAPI");
-            HttpResponseMessage httpResponse = await client.GetAsync(url.URL);
-            await HandleResponse(httpResponse);
-            TResult result = await httpResponse.Content.ReadFromJsonAsync<TResult>().ConfigureAwait(false);
-            return result!;
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("CouponAPI");
+                HttpResponseMessage httpResponse = await client.GetAsync(requestDto.URL);
+                await HandleResponse(httpResponse);
+                var result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                Console.WriteLine($"Deserialization failed: {result}");
+
+                return result!;
+            }
+            catch (Exception ex)
+            {
+
+
+                Console.WriteLine($"Deserialization failed: {ex.Message}");
+                throw; // Rethrow the exception to propagate it further if needed
+            }
         }
     }
 }
