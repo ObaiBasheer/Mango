@@ -83,19 +83,28 @@ namespace Mango.Services.CouponAPI
 
         public static async Task<Created> CreateItem([AsParameters] CouponServices services,[FromBody] CreateCouponDto createCoupon)
         {
-            
-            var item = new Coupon
+            try
             {
-                CouponCode = createCoupon.CouponCode,
-                MinAmount = createCoupon.MinAmount,
-                DiscountAmount = createCoupon.DiscountAmount,
-                ExeprationDate = createCoupon.ExeprationDate,
-                LastUpdate = createCoupon.LastUpdate,
-            };
+                var item = new Coupon
+                {
+                    CouponCode = createCoupon.CouponCode,
+                    MinAmount = createCoupon.MinAmount,
+                    DiscountAmount = createCoupon.DiscountAmount,
+                    ExeprationDate = createCoupon.ExeprationDate,
+                    LastUpdate = createCoupon.LastUpdate,
+                };
 
-            await services.Context.coupons.AddAsync(item);
-            await services.Context.SaveChangesAsync();
-            return TypedResults.Created($"/api/v1/coupon/items/{item.CouponId}");
+                await services.Context.coupons.AddAsync(item);
+                await services.Context.SaveChangesAsync();
+                return TypedResults.Created($"/api/v1/coupon/items/{item.CouponId}");
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            
+           
 
 
         }
