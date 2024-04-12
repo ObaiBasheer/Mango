@@ -15,11 +15,9 @@ namespace Mango.Services.AuthAPI.Models.Dtos
         [Display(Name = "Password")]
         public string? Password { get; init; }
 
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string? ConfirmPassword { get; init; }
+        public string? Name { get; init; }
+        public string? PhoneNumber { get; init; }
 
-        public ApplicationUser? User { get; init; }
+        public string? role { get; init; }  //By default Normall User
     }
 }
