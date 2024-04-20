@@ -2,11 +2,6 @@
 using Mango.Web.Models.Coupon;
 using Mango.Web.Services.Coupon;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using NuGet.Protocol;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using static Mango.Web.Models.Coupon.CouponDto;
 
 namespace Mango.Web.Controllers
 {

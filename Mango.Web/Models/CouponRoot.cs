@@ -2,7 +2,7 @@
 
 namespace Mango.Web.Models
 {
-    public class CouponRoot()
+    public class CouponRoot
     {
         public int PageIndex { get; set; }
 
@@ -11,5 +11,7 @@ namespace Mango.Web.Models
         public long Count { get; set; }
 
         public IEnumerable<CouponItem> Data { get; set; }
+
+      
     }
 }
