@@ -14,6 +14,7 @@ builder.Services.AddHttpClient<ICouponService, CouponService>();
 
 //Get API URL 
 SD.CouponURLBase = builder.Configuration["ServiceURL:API-URL"];
+SD.AuthAPIBase = builder.Configuration["ServiceURL:Auth-API-URL"];
 builder.Services.AddScoped<IRequestProvider, RequestProvider>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 var app = builder.Build();
