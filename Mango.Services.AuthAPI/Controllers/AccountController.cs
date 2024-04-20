@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Mango.Services.AuthAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/auth/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
