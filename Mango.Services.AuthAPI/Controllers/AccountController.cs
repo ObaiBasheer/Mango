@@ -28,10 +28,12 @@ namespace Mango.Services.AuthAPI.Controllers
                 _responseDto.Message = errorsMessage;
                 return BadRequest(errorsMessage);
             }
-            return Ok();
+            return Ok(register);
         }
 
         [HttpPost("login")]
+        [ProducesResponseType(200, Type = typeof(ResponseDto))]
+
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             var loginResponse = await _authService.Login(model);
@@ -48,9 +50,10 @@ namespace Mango.Services.AuthAPI.Controllers
         }
 
         [HttpPost("assignRole")]
-        public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto model)
+        [ProducesResponseType(201)]
+        public async Task<IActionResult> AssignRole([FromBody] RegisterDto model)
         {
-            var assignRoleResponse = await _authService.AssignRole(model.Email!, model.RoleName!);
+            var assignRoleResponse = await _authService.AssignRole(model.Email!, model.role!);
 
             if (!assignRoleResponse)
             {
@@ -58,7 +61,7 @@ namespace Mango.Services.AuthAPI.Controllers
                 _responseDto.Message = "Username or password is incorrect";
                 return BadRequest(_responseDto);
             }
-            return Ok(_responseDto);
+            return Created();
         }
     }
 }

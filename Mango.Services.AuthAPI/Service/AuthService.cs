@@ -82,7 +82,7 @@ namespace Mango.Services.AuthAPI.Service
 
         public async Task<LoginResponseDto> Login(LoginDto dto)
         {
-            var user = await _dbContext.ApplicationUsers.FirstOrDefaultAsync(u=>u.UserName == dto.Email);
+            var user = await _dbContext.ApplicationUsers.FirstOrDefaultAsync(u=>u.UserName!.ToLower() == dto.Email!.ToLower());
 
             if (user == null)
             {
