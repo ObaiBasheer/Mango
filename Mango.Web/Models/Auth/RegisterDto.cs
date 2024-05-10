@@ -18,6 +18,6 @@ namespace Mango.Web.Models
         public string? Name { get; init; }
         public string? PhoneNumber { get; init; }
 
-        public string? Role { get; init; }  //By default Normal User
+        public string? Role { get; set; }
     }
 }
