@@ -119,6 +119,7 @@ namespace Mango.Web.Controllers
             identity.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, jwt.Claims.FirstOrDefault(t => t.Type == JwtRegisteredClaimNames.Sub)!.Value));
             identity.AddClaim(new Claim(JwtRegisteredClaimNames.Name, jwt.Claims.FirstOrDefault(t => t.Type == JwtRegisteredClaimNames.Name)!.Value));
             identity.AddClaim(new Claim(ClaimTypes.Name, jwt.Claims.FirstOrDefault(t => t.Type == JwtRegisteredClaimNames.Email)!.Value));
+            identity.AddClaim(new Claim(ClaimTypes.Role, jwt.Claims.FirstOrDefault(t => t.Type == "role")!.Value));
 
             var principle = new ClaimsPrincipal(identity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,principle);
