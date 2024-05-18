@@ -21,21 +21,16 @@ namespace Mango.Web.Services.Coupon
 
 		public async Task<ResponseDto?> CreateCouponsAsync(CouponItem couponDto)
 		{
-			try
-			{
-                var coupon = await _requestProvider.PostAsync<CouponRoot>(new RequestDto()
+			
+                var result = await _requestProvider.PostAsync<CouponRoot>(new RequestDto()
                 {
                     MethodType = SD.MethodType.POST,
                     Data = couponDto,
                     URL = SD.CouponURLBase + "api/v1/coupon/items"
                 });
 
-                return new ResponseDto { IsSuccess = true, Message = "Coupon Created Successfully" };
-            }
-			catch (Exception ex)
-			{
-                return new ResponseDto { IsSuccess = false, Message = ex.Message };
-            }
+                return new ResponseDto { IsSuccess = result.IsSuccess, Message = result.Message };
+           
 			
 		}
 
