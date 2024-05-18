@@ -5,12 +5,12 @@ namespace Mango.Web.Services.RequestProvider
 {
     public interface IRequestProvider
     {
-		Task<TResult> GetAllAsync<TResult>(RequestDto requestDto);
-		Task<TResult> GetByCodeAsync<TResult>(RequestDto requestDto);
-		Task<TResult> GetByIdAsync<TResult>(RequestDto requestDto);
-		Task<TResult> PostAsync<TResult>(RequestDto requestDto);
-		Task<TResult> PutAsync<TResult>(RequestDto requestDto);
-		Task DeleteAsync(RequestDto requestDto);
+		Task<ResponseDto> GetAllAsync<TResult>(RequestDto requestDto, bool UseToken = true);
+		Task<TResult> GetByCodeAsync<TResult>(RequestDto requestDto, bool UseToken =true );
+		Task<TResult> GetByIdAsync<TResult>(RequestDto requestDto, bool UseToken = true);
+		Task<TResult> PostAsync<TResult>(RequestDto requestDto, bool UseToken = true);
+		Task<TResult> PutAsync<TResult>(RequestDto requestDto, bool UseToken = true);
+		Task<ResponseDto> DeleteAsync(RequestDto requestDto, bool UseToken = true);
 		//Task<ResponseDto?> SendAsync(RequestDto requestDto);
 	}
 }

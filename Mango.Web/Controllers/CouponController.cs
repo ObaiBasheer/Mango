@@ -2,6 +2,7 @@
 using Mango.Web.Models.Coupon;
 using Mango.Web.Services.Coupon;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Mango.Web.Controllers
 {
@@ -15,20 +16,23 @@ namespace Mango.Web.Controllers
         }
         public async Task<IActionResult> CouponIndex()
         {
-			var responseDto = new ResponseDto();
 			try
 			{
+                CouponRoot root = new();
                 List<CouponItem> list = new();
 
-                List<CouponItem>? response = (List<CouponItem>?)await _couponService.GetAllCouponsAsync();
+               var  response = await _couponService.GetAllCouponsAsync();
 
-				if (response != null )
+                if (response.Equals != null && response.Result != null )
 				{
-					list =response;
-				}
+
+                    root = (CouponRoot)response.Result;
+                    list = (List<CouponItem>)root.Data!;
+
+                }
 				else
 				{
-                    TempData["error"] = "Error in get All data";
+                    TempData["error"] = response.Message;
                 }
 
 				return View(list);
@@ -88,8 +92,13 @@ namespace Mango.Web.Controllers
 
             if (response != null && response.IsSuccess)
             {
-                TempData["success"] = response?.Message;
+                TempData["success"] = "The Record Is Deleted";
                 return RedirectToAction(nameof(CouponIndex));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+
             }
             return View(couponItem);
         }

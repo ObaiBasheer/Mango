@@ -1,5 +1,6 @@
 ﻿using Mango.Services.CouponAPI.Dtos;
 using Mango.Services.CouponAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace Mango.Services.CouponAPI
 
             return builder;
         }
+
 
         public static async Task<Results<Ok<PaginatedItems<CouponDto>>, BadRequest<string>>> GetAllItems(
             [AsParameters] PaginationRequest paginationRequest,
@@ -81,6 +83,7 @@ namespace Mango.Services.CouponAPI
             return TypedResults.Ok(new PaginatedItems<CouponDto>(pageIndex, pageSize, totalItem, dto));
         }
 
+        [Authorize(Roles = "ADMIN")]
         public static async Task<Created> CreateItem([AsParameters] CouponServices services,[FromBody] CreateCouponDto createCoupon)
         {
             try
@@ -109,6 +112,8 @@ namespace Mango.Services.CouponAPI
 
         }
 
+        [Authorize(Roles = "ADMIN")]
+
         public static async Task<Results<Created, NotFound<string>>> UpdateItem([AsParameters]CouponServices services, UpdateCouponDto updateCoupon)
         {
             var couponItem = await services.Context.coupons.SingleOrDefaultAsync(x => x.CouponId == updateCoupon.CouponId);
@@ -127,6 +132,8 @@ namespace Mango.Services.CouponAPI
 
             return TypedResults.Created($"/api/v1/coupon/items/{updateCoupon.CouponId}");
         }
+
+        [Authorize(Roles = "ADMIN")]
 
         public static async Task<Results<NoContent, NotFound>> DeleteItemById([AsParameters] CouponServices services, int Id)
         {

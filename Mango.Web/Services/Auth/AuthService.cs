@@ -22,7 +22,7 @@ namespace Mango.Web.Services.Auth
                     URL = SD.AuthAPIBase + "api/v1/auth/Account/assignRole"
                 });
 
-                return new ResponseDto { IsSuccess = true, Message = "Successfully" };
+                return new ResponseDto { IsSuccess = true, Message = "Successfully" } ;
             }
             catch (Exception ex)
             {
@@ -39,7 +39,7 @@ namespace Mango.Web.Services.Auth
                     MethodType = SD.MethodType.POST,
                     Data = loginDto,
                     URL = SD.AuthAPIBase + "api/v1/auth/Account/login"
-                });
+                }, UseToken:false);
 
                 
             }
@@ -58,7 +58,7 @@ namespace Mango.Web.Services.Auth
                     MethodType = SD.MethodType.POST,
                     Data = registerDto,
                     URL = SD.AuthAPIBase + "api/v1/auth/Account/register"
-                });
+                }, UseToken: false);
 
                 return new ResponseDto { IsSuccess = true, Message = "Successfully" };
             }

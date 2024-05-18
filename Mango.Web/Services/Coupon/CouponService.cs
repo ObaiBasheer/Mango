@@ -1,9 +1,12 @@
-﻿using Mango.Web.Models;
+﻿using Mango.Web.Exceptions;
+using Mango.Web.Models;
 using Mango.Web.Models.Coupon;
 using Mango.Web.Services.RequestProvider;
 using Mango.Web.Utility;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Security.Authentication;
 
 namespace Mango.Web.Services.Coupon
 {
@@ -38,65 +41,72 @@ namespace Mango.Web.Services.Coupon
 
 		public async Task<ResponseDto?> DeleteCouponsAsync(int id)
 		{
-			try
-			{
-                await _requestProvider.DeleteAsync(new RequestDto()
-                {
-                    MethodType = SD.MethodType.DELETE,
-                    URL = SD.CouponURLBase + "api/v1/coupon/items/" + id
-                });
-                return new ResponseDto { IsSuccess = true, Message = "Coupon Deleted Successfully" };
-            }
-			catch (Exception ex)
-			{
 
-                return new ResponseDto { IsSuccess = false, Message = ex.Message };
-
-            }
-
-
-
+           return await _requestProvider.DeleteAsync(new RequestDto()
+            {
+                MethodType = SD.MethodType.DELETE,
+                URL = SD.CouponURLBase + "api/v1/coupon/items/" + id
+            });
+           
         }
 
-		public async Task<IEnumerable<CouponItem>> GetAllCouponsAsync()
+		public async Task<ResponseDto> GetAllCouponsAsync()
 		{
-			try
-			{
-                var couponItem = await _requestProvider.GetAllAsync<CouponRoot>(new RequestDto()
+            try
+            {
+                // Make the API request to get the data
+                var Item = await _requestProvider.GetAllAsync<CouponRoot>(new RequestDto()
                 {
                     MethodType = SD.MethodType.GET,
                     URL = SD.CouponURLBase + "api/v1/coupon/items"
                 });
 
-				return couponItem.Data!;
-            }
-			catch 
-			{
+                // Deserialize the response into CouponRoot object
+                //CouponRoot couponRoot = JsonConvert.DeserializeObject<CouponRoot>(Convert.ToString(Item.Data)!)!;
 
-				return  Enumerable.Empty<CouponItem>();
-			}
-			
-		}
-        public async Task<IEnumerable<CouponItem>> GetCouponByCodeAsync(string couponCode)
-		{
-			try
-			{
-                CouponRoot coupon = await _requestProvider.GetByCodeAsync<CouponRoot>(new RequestDto()
-                {
-                    MethodType = SD.MethodType.GET,
-                    URL = SD.CouponURLBase + "api/v1/coupon/items/byCode/" + couponCode
-                });
+                // Access the list of coupon items
+                //List<CouponItem> couponItems = (List<CouponItem>)Item.Data!;
 
-                return coupon?.Data ?? null!;
-            }
-			catch 
-			{
+                // Create your desired response
+                var response = new ResponseDto { IsSuccess = Item.IsSuccess, Message = Item.Message, Result = Item.Result };
 
-                return Enumerable.Empty<CouponItem>();
+                return response;
+           }
+            catch (ServiceAuthenticationException ex)
+            {
+                // Log the exception or handle it as needed
+                Console.WriteLine("An error occurred: " + ex.Message);
+
+                // Return failure response
+               return new ResponseDto { IsSuccess = false, Message = ex.Message, Result = null };
             }
-			
-		}
-		public async Task<CouponItem> GetCouponByIdAsync(int id)
+            catch(Exception ex)
+            {
+                return new ResponseDto { IsSuccess = false, Message = "Failed", Result = null };
+            }
+
+
+        }
+        //      public async Task<IEnumerable<CouponItem>> GetCouponByCodeAsync(string couponCode)
+        //{
+        //	try
+        //	{
+        //              CouponRoot coupon = await _requestProvider.GetByCodeAsync<CouponRoot>(new RequestDto()
+        //              {
+        //                  MethodType = SD.MethodType.GET,
+        //                  URL = SD.CouponURLBase + "api/v1/coupon/items/byCode/" + couponCode
+        //              });
+
+        //              return coupon?.Data ?? null!;
+        //          }
+        //	catch 
+        //	{
+
+        //              return Enumerable.Empty<CouponItem>();
+        //          }
+
+        //}
+        public async Task<CouponItem> GetCouponByIdAsync(int id)
 		{
 			try
 			{
