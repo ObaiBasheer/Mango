@@ -29,6 +29,7 @@ namespace Mango.Services.ProductAPI.Controllers
             try
             {
                 IEnumerable<Product> objList = _db.Products.ToList();
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<IEnumerable<ProductDto>>(objList);
             }
             catch (Exception ex)
@@ -46,6 +47,8 @@ namespace Mango.Services.ProductAPI.Controllers
             try
             {
                 Product obj = _db.Products.First(u => u.ProductId == id);
+                _response.IsSuccess = true;
+
                 _response.Result = _mapper.Map<ProductDto>(obj);
             }
             catch (Exception ex)
@@ -95,6 +98,8 @@ namespace Mango.Services.ProductAPI.Controllers
                 }
                 _db.Products.Update(product);
                 _db.SaveChanges();
+                _response.IsSuccess = true;
+
                 _response.Result = _mapper.Map<ProductDto>(product);
             }
             catch (Exception ex)
@@ -142,6 +147,8 @@ namespace Mango.Services.ProductAPI.Controllers
                 _db.Products.Update(product);
                 _db.SaveChanges();
 
+                _response.IsSuccess = true;
+
                 _response.Result = _mapper.Map<ProductDto>(product);
             }
             catch (Exception ex)
@@ -171,6 +178,8 @@ namespace Mango.Services.ProductAPI.Controllers
                 }
                 _db.Products.Remove(obj);
                 _db.SaveChanges();
+                _response.IsSuccess = true;
+
             }
             catch (Exception ex)
             {
