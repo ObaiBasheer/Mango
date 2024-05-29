@@ -34,12 +34,14 @@ namespace Mango.Web.Services.Auth
         {
             try
             {
-               return await _requestProvider.PostAsync<ResponseDto>(new RequestDto()
+               var result = await _requestProvider.PostAsync<ResponseDto>(new RequestDto()
                 {
                     MethodType = SD.MethodType.POST,
                     Data = loginDto,
                     URL = SD.AuthAPIBase + "api/v1/auth/Account/login"
                 }, UseToken:false);
+
+                return (ResponseDto)result.Result!;
 
                 
             }

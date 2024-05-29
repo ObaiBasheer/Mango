@@ -4,6 +4,7 @@
     {
         public static string? CouponURLBase {  get; set; }
         public static string? AuthAPIBase {  get; set; }
+        public static string? ProductAPIBase {  get; set; }
         public const string RoleAdmin = "ADMIN";
         public const string RoleCustomer = "CUSTOMER";
         public const string TokenCookie = "JwtToken";
@@ -13,6 +14,12 @@
             POST,
             PUT,
             DELETE,
+        }
+
+        public enum ContentType
+        {
+            Json,
+            MultipartFormData,
         }
     }
 }

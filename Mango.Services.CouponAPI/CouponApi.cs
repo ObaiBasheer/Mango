@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using FluentValidation;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Mango.Services.CouponAPI
 {
@@ -17,84 +21,128 @@ namespace Mango.Services.CouponAPI
             builder.MapGet("/items/byCode/{code}", GetItemByCode);
 
             // Routes for modifying catalog items.
-            builder.MapPut("/items", UpdateItem);
-            builder.MapPost("/items", CreateItem);
-            builder.MapDelete("/items/{id:int}", DeleteItemById);
+            builder.MapPut("/items", UpdateItem).RequireAuthorization("AdminPolicy");
+            builder.MapPost("/items", CreateItem).RequireAuthorization("AdminPolicy");
+            builder.MapDelete("/items/{id:int}", DeleteItemById).RequireAuthorization("AdminPolicy");
 
             return builder;
         }
-
 
         public static async Task<Results<Ok<PaginatedItems<CouponDto>>, BadRequest<string>>> GetAllItems(
             [AsParameters] PaginationRequest paginationRequest,
             [AsParameters] CouponServices services
             )
         {
-            var pageSize = paginationRequest.PageSize;
-            var pageIndex = paginationRequest.PageIndex;
-
-            var totalItems = await services.Context.coupons.LongCountAsync();
-
-            var itemsOnPage = await services.Context.coupons
-                                .OrderBy(x=>x.CouponCode)
-                                .Skip(pageSize * pageIndex)
-                                .Take(pageSize)
-                                .ToListAsync();
-
-            var itemsDto = services.mapper.Map<List<CouponDto>>(itemsOnPage);
-           
-
-            return TypedResults.Ok(new PaginatedItems<CouponDto>(pageIndex, pageSize, totalItems, itemsDto));
-        }
-
-        public static async Task<Results<Ok<CouponDto>, NotFound, BadRequest<string>>> GetItemById([AsParameters] CouponServices services, int Id)
-        {
-            if(Id <= 0)
+            try
             {
-                return TypedResults.BadRequest("Id is not valid.");
+                var pageSize = paginationRequest.PageSize;
+                var pageIndex = paginationRequest.PageIndex;
+
+                if (pageSize <= 0 || pageIndex < 0)
+                {
+                    return TypedResults.BadRequest("Invalid pagination parameters.");
+                }
+
+                var totalItems = await services.Context.coupons.LongCountAsync();
+
+                var itemsOnPage = await services.Context.coupons
+                                    .OrderBy(x => x.CouponCode)
+                                    .Skip(pageSize * pageIndex)
+                                    .Take(pageSize)
+                                    .ToListAsync();
+
+                var itemsDto = services.mapper.Map<List<CouponDto>>(itemsOnPage);
+
+                return TypedResults.Ok(new PaginatedItems<CouponDto>(pageIndex, pageSize, totalItems, itemsDto));
             }
-
-            var coupon = await services.Context.coupons.SingleOrDefaultAsync(c=>c.CouponId == Id);
-
-            if(coupon == null)
+            catch (Exception ex)
             {
-                return TypedResults.NotFound();
+                //logger.LogError(ex, "Error fetching items.");
+                return TypedResults.BadRequest("An error occurred while fetching items.");
             }
-
-
-            return TypedResults.Ok(services.mapper.Map<CouponDto>(coupon));
-
         }
 
-        public static async Task<Ok<PaginatedItems<CouponDto>>> GetItemByCode([AsParameters] CouponServices services, [AsParameters] PaginationRequest paginationRequest , string code)
-        {
-            var pageIndex = paginationRequest.PageIndex;
-            var pageSize = paginationRequest.PageSize;
-
-            var totalItem = await services.Context.coupons.Where(c=>c.CouponCode.StartsWith(code)).LongCountAsync();
-
-            var itemsOnPage =  await services.Context.coupons.Where(c=>c.CouponCode.StartsWith(code))
-                .Skip(pageSize * pageIndex)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var dto = services.mapper.Map<List<CouponDto>>(itemsOnPage);
-
-            return TypedResults.Ok(new PaginatedItems<CouponDto>(pageIndex, pageSize, totalItem, dto));
-        }
-
-        [Authorize(Roles = "ADMIN")]
-        public static async Task<Created> CreateItem([AsParameters] CouponServices services,[FromBody] CreateCouponDto createCoupon)
+        public static async Task<Results<Ok<CouponDto>, NotFound, BadRequest<string>>> GetItemById(
+            [AsParameters] CouponServices services, int id)
         {
             try
             {
+                if (id <= 0)
+                {
+                    return TypedResults.BadRequest("Id is not valid.");
+                }
+
+                var coupon = await services.Context.coupons.SingleOrDefaultAsync(c => c.CouponId == id);
+
+                if (coupon == null)
+                {
+                    return TypedResults.NotFound();
+                }
+
+                return TypedResults.Ok(services.mapper.Map<CouponDto>(coupon));
+            }
+            catch (Exception ex)
+            {
+                //logger.LogError(ex, "Error fetching item by Id.");
+                return TypedResults.BadRequest("An error occurred while fetching item by Id.");
+            }
+        }
+
+        public static async Task<Results<Ok<PaginatedItems<CouponDto>>, BadRequest<string>>> GetItemByCode(
+            [AsParameters] CouponServices services, [AsParameters] PaginationRequest paginationRequest, string code)
+        {
+            try
+            {
+                var pageIndex = paginationRequest.PageIndex;
+                var pageSize = paginationRequest.PageSize;
+
+                if (pageSize <= 0 || pageIndex < 0)
+                {
+                    return TypedResults.BadRequest("Invalid pagination parameters.");
+                }
+
+                var totalItems = await services.Context.coupons
+                                    .Where(c => c.CouponCode.StartsWith(code))
+                                    .LongCountAsync();
+
+                var itemsOnPage = await services.Context.coupons
+                                    .Where(c => c.CouponCode.StartsWith(code))
+                                    .Skip(pageSize * pageIndex)
+                                    .Take(pageSize)
+                                    .ToListAsync();
+
+                var itemsDto = services.mapper.Map<List<CouponDto>>(itemsOnPage);
+
+                return TypedResults.Ok(new PaginatedItems<CouponDto>(pageIndex, pageSize, totalItems, itemsDto));
+            }
+            catch (Exception ex)
+            {
+                //logger.LogError(ex, "Error fetching items by code.");
+                return TypedResults.BadRequest("An error occurred while fetching items by code.");
+            }
+        }
+
+        [Authorize(Roles = "ADMIN")]
+        public static async Task<Results<Created, BadRequest<string>>> CreateItem(
+            [AsParameters] CouponServices services, [FromBody] CreateCouponDto createCoupon)
+        {
+            try
+            {
+                var validator = new CreateCouponDtoValidator();
+                var validationResult = await validator.ValidateAsync(createCoupon);
+
+                if (!validationResult.IsValid)
+                {
+                    return TypedResults.BadRequest(string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                }
+
                 var item = new Coupon
                 {
                     CouponCode = createCoupon.CouponCode,
                     MinAmount = createCoupon.MinAmount,
                     DiscountAmount = createCoupon.DiscountAmount,
                     ExeprationDate = createCoupon.ExeprationDate,
-                    LastUpdate = createCoupon.LastUpdate,
+                    LastUpdate = DateTime.UtcNow
                 };
 
                 await services.Context.coupons.AddAsync(item);
@@ -103,50 +151,67 @@ namespace Mango.Services.CouponAPI
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                //logger.LogError(ex, "Error creating item.");
+                return TypedResults.BadRequest("An error occurred while creating the item.");
             }
-            
-           
-
-
         }
 
         [Authorize(Roles = "ADMIN")]
-
-        public static async Task<Results<Created, NotFound<string>>> UpdateItem([AsParameters]CouponServices services, UpdateCouponDto updateCoupon)
+        public static async Task<Results<Created, NotFound<string>, BadRequest<string>>> UpdateItem(
+            [AsParameters] CouponServices services, [FromBody] UpdateCouponDto updateCoupon)
         {
-            var couponItem = await services.Context.coupons.SingleOrDefaultAsync(x => x.CouponId == updateCoupon.CouponId);
-
-            if(couponItem == null )
+            try
             {
-                return TypedResults.NotFound($"Item with id {updateCoupon.CouponId} not found.");
+                var validator = new UpdateCouponDtoValidator();
+                var validationResult = await validator.ValidateAsync(updateCoupon);
+
+                if (!validationResult.IsValid)
+                {
+                    return TypedResults.BadRequest(string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                }
+
+                var couponItem = await services.Context.coupons.SingleOrDefaultAsync(x => x.CouponId == updateCoupon.CouponId);
+
+                if (couponItem == null)
+                {
+                    return TypedResults.NotFound($"Item with id {updateCoupon.CouponId} not found.");
+                }
+
+                services.Context.Entry(couponItem).CurrentValues.SetValues(updateCoupon);
+                await services.Context.SaveChangesAsync();
+
+                return TypedResults.Created($"/api/v1/coupon/items/{updateCoupon.CouponId}");
             }
-
-            var trackItem = services.Context.coupons.Entry(couponItem);
-
-            // Update current product
-            trackItem.CurrentValues.SetValues(trackItem);
-
-            await services.Context.SaveChangesAsync();
-
-            return TypedResults.Created($"/api/v1/coupon/items/{updateCoupon.CouponId}");
+            catch (Exception ex)
+            {
+                //logger.LogError(ex, "Error updating item.");
+                return TypedResults.BadRequest("An error occurred while updating the item.");
+            }
         }
 
         [Authorize(Roles = "ADMIN")]
-
-        public static async Task<Results<NoContent, NotFound>> DeleteItemById([AsParameters] CouponServices services, int Id)
+        public static async Task<Results<NoContent, NotFound, BadRequest<string>>> DeleteItemById(
+            [AsParameters] CouponServices services, int id)
         {
-            var itemToDelete = services.Context.coupons.SingleOrDefault(c=>c.CouponId == Id);
-
-            if(itemToDelete == null )
+            try
             {
-              return TypedResults.NotFound();
-            }
+                var itemToDelete = await services.Context.coupons.SingleOrDefaultAsync(c => c.CouponId == id);
 
-            services.Context.coupons.Remove(itemToDelete);
-            await services.Context.SaveChangesAsync();
-            return TypedResults.NoContent();
+                if (itemToDelete == null)
+                {
+                    return TypedResults.NotFound();
+                }
+
+                services.Context.coupons.Remove(itemToDelete);
+                await services.Context.SaveChangesAsync();
+                return TypedResults.NoContent();
+            }
+            catch (Exception ex)
+            {
+                //logger.LogError(ex, "Error deleting item.");
+                return TypedResults.BadRequest("An error occurred while deleting the item.");
+            }
         }
     }
+
 }
