@@ -69,7 +69,7 @@ app.MapDefaultEndpoints();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGroup("/api/v1/coupon").RequireAuthorization()
+app.MapGroup("/api/v1/coupon")
     .WithTags("Coupon API")
     .MapCouponAPI();
 

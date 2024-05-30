@@ -88,32 +88,21 @@ namespace Mango.Services.CouponAPI
             }
         }
 
-        public static async Task<Results<Ok<PaginatedItems<CouponDto>>, BadRequest<string>>> GetItemByCode(
-            [AsParameters] CouponServices services, [AsParameters] PaginationRequest paginationRequest, string code)
+        public static async Task<Results<Ok<CouponDto>, NotFound, BadRequest<string>>> GetItemByCode(
+            [AsParameters] CouponServices services,  string code)
         {
             try
             {
-                var pageIndex = paginationRequest.PageIndex;
-                var pageSize = paginationRequest.PageSize;
+              
 
-                if (pageSize <= 0 || pageIndex < 0)
-                {
-                    return TypedResults.BadRequest("Invalid pagination parameters.");
-                }
-
-                var totalItems = await services.Context.coupons
-                                    .Where(c => c.CouponCode.StartsWith(code))
-                                    .LongCountAsync();
+              
 
                 var itemsOnPage = await services.Context.coupons
-                                    .Where(c => c.CouponCode.StartsWith(code))
-                                    .Skip(pageSize * pageIndex)
-                                    .Take(pageSize)
-                                    .ToListAsync();
+                                    .SingleOrDefaultAsync(c => c.CouponCode == code);
+                                   
 
-                var itemsDto = services.mapper.Map<List<CouponDto>>(itemsOnPage);
 
-                return TypedResults.Ok(new PaginatedItems<CouponDto>(pageIndex, pageSize, totalItems, itemsDto));
+                return TypedResults.Ok(services.mapper.Map<CouponDto>(itemsOnPage));
             }
             catch (Exception ex)
             {
