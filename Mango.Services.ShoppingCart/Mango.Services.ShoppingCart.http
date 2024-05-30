@@ -1,6 +1,7 @@
 @Mango.Services.ShoppingCart_HostAddress = http://localhost:5169
 
-GET {{Mango.Services.ShoppingCart_HostAddress}}/weatherforecast/
+POST {{Mango.Services.ShoppingCart_HostAddress}}/cart/cartUpsert/
 Accept: application/json
+Content-Type: application/json
 
 ###

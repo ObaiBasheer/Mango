@@ -13,10 +13,7 @@ namespace Mango.Services.ShoppingCartAPI.Data
         public DbSet<CartDetails> CartDetails { get; set; }
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
+        
 
     }
 }

@@ -2,12 +2,11 @@
 {
     public class CouponDto
     {
-        public int CouponId { get; set; }
-        public string CouponCode { get; set; } = string.Empty;
-        public double DiscountAmount { get; set; }
-        public int MinAmount { get; set; }
-        public DateTime ExeprationDate { get; set; }
-
-        public DateTime LastUpdate { get; set; }
+        public int couponId { get; set; }
+        public string? couponCode { get; set; }
+        public int discountAmount { get; set; }
+        public int minAmount { get; set; }
+        public DateTime ExpirationDate { get; set; }
+        public DateTime lastUpdate { get; set; }
     }
 }
