@@ -3,6 +3,7 @@ using Mango.Web.Services.Auth;
 using Mango.Web.Services.Coupon;
 using Mango.Web.Services.Product;
 using Mango.Web.Services.RequestProvider;
+using Mango.Web.Services.ShoppingCart;
 using Mango.Web.Utility;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -21,6 +22,7 @@ builder.Services.AddHttpClient<IAuthService, AuthService>();
 SD.CouponURLBase = builder.Configuration["ServiceURL:API-URL"];
 SD.AuthAPIBase = builder.Configuration["ServiceURL:Auth-API-URL"];
 SD.ProductAPIBase = builder.Configuration["ServiceURL:Product-API-URL"];
+SD.ShoppingCartAPIBase = builder.Configuration["ServiceURL:ShoppingCart-API-URL"];
 
 
 builder.Services.AddScoped<IRequestProvider, RequestProvider>();
@@ -28,6 +30,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(option =>
     {
